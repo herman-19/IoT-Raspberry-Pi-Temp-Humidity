@@ -2,7 +2,7 @@
 #
 # I2C Address: 0x44
 # Voltage:     3.3 V or 5.5 V
-# Temperature Sensor Range: -40–125°C, with ±0.3°C accuracy
+# Temperature Sensor Range: -40-125 C, with 0.3 C accuracy.
 
 import smbus
 import time
