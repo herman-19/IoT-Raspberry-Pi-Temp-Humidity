@@ -10,34 +10,41 @@ import requests
 
 # Get I2C bus
 bus = smbus.SMBus(1)
- 
-# SHT31 address, 0x44(68)
-bus.write_i2c_block_data(0x44, 0x2C, [0x06])
- 
-time.sleep(0.5)
- 
-# SHT31 address, 0x44(68)
-# Read data back from 0x00(00), 6 bytes
-# Temp MSB, Temp LSB, Temp CRC, Humididty MSB, Humidity LSB, Humidity CRC
-data = bus.read_i2c_block_data(0x44, 0x00, 6)
- 
-# Convert data.
-temp     = data[0] * 256 + data[1]
-cTemp    = -45 + (175 * temp / 65535.0)
-fTemp    = -49 + (315 * temp / 65535.0)
-humidity = 100 * (data[3] * 256 + data[4]) / 65535.0
- 
-# Print data.
-print ("Temperature in Celsius is : %.2f C"    %cTemp)
-print ("Temperature in Fahrenheit is : %.2f F" %fTemp)
-print ("Relative Humidity is : %.2f %%RH"      %humidity)
 
-# Send data to AWS web server.
-url     = "http://ec2-18-188-51-10.us-east-2.compute.amazonaws.com/sensorData"
-payload = {'temp': '%.2f'%fTemp, 'humidity': '%.2f'%humidity}
+def doSensorReadings():
+    # SHT31 address, 0x44(68)
+    # Read data back from 0x00(00), 6 bytes
+    # Temp MSB, Temp LSB, Temp CRC, Humididty MSB, Humidity LSB, Humidity CRC
+    data = bus.read_i2c_block_data(0x44, 0x00, 6)
+    
+    # Convert data.
+    temp     = data[0] * 256 + data[1]
+    cTemp    = -45 + (175 * temp / 65535.0)
+    fTemp    = -49 + (315 * temp / 65535.0)
+    humidity = 100 * (data[3] * 256 + data[4]) / 65535.0
+    
+    # Print data.
+    print ("Temperature in Celsius is : %.2f C"    %cTemp)
+    print ("Temperature in Fahrenheit is : %.2f F" %fTemp)
+    print ("Relative Humidity is : %.2f %%RH"      %humidity)
+    
+    # Send data local network server.
+    url     = "http://192.168.0.169:3000/sensorData"
+    payload = {'temp': '%.2f'%fTemp, 'humidity': '%.2f'%humidity}
+    
+    r = requests.post(url, data=payload)
+    if r.status_code == 200:
+        print(r.text)               # Code to handle web response
+    else:
+        print('Something is wrong') # in case of something went wrong!
 
-r = requests.post(url, data=payload)
-if r.status_code == 200:
-    print(r.text)               # Code to handle web response
-else:
-    print('Something is wrong') # in case of something went wrong!
+def main():
+    print("hi")
+    # SHT31 address, 0x44(68)
+    bus.write_i2c_block_data(0x44, 0x2C, [0x06])
+ 
+    time.sleep(0.5)
+    doSensorReadings()
+
+if __name__ == "__main__":
+    main()
