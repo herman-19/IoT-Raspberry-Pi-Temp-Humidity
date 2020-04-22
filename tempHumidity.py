@@ -6,12 +6,17 @@
 
 import smbus
 import time
+import datetime
 import requests
 
 # Get I2C bus
 bus = smbus.SMBus(1)
 
 def doSensorReadings():
+    # SHT31 address, 0x44(68)
+    bus.write_i2c_block_data(0x44, 0x2C, [0x06])
+
+    time.sleep(0.5)
     # SHT31 address, 0x44(68)
     # Read data back from 0x00(00), 6 bytes
     # Temp MSB, Temp LSB, Temp CRC, Humididty MSB, Humidity LSB, Humidity CRC
@@ -39,12 +44,13 @@ def doSensorReadings():
         print('Something is wrong') # in case of something went wrong!
 
 def main():
-    print("hi")
-    # SHT31 address, 0x44(68)
-    bus.write_i2c_block_data(0x44, 0x2C, [0x06])
- 
-    time.sleep(0.5)
-    doSensorReadings()
+    while True:
+        # Do sensor readings every 15-minute interval based on system time.
+        if datetime.datetime.now().minute % 15 == 0:
+            doSensorReadings()
+    
+        print(datetime.datetime.now())
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()
