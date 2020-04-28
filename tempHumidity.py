@@ -37,11 +37,12 @@ def doSensorReadings():
     url     = "http://192.168.0.169:3000/sensorData"
     payload = {'temp': '%.2f'%fTemp, 'humidity': '%.2f'%humidity}
     
-    r = requests.post(url, data=payload)
-    if r.status_code == 200:
-        print(r.text)               # Code to handle web response
-    else:
-        print('Something is wrong') # in case of something went wrong!
+    try:
+        r = requests.post(url, data=payload)
+        if r.status_code == 200:
+            print(r.text)               # Code to handle web response
+    except requests.exceptions.RequestException as err:
+        print 'Whoops--something went wrong:', err
 
 def main():
     while True:
